@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getReservationById } from '@/lib/reservations';
@@ -6,6 +7,15 @@ import StatusBadge from '@/components/StatusBadge';
 import { STATUS_LABEL, type ReservationStatus } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  return { title: `予約詳細 #${String(id).padStart(6, '0')} | 予約管理システム` };
+}
 
 const SERVICES = [
   'カット','カット＆カラー','カット＆トリートメント',
@@ -22,10 +32,12 @@ function formatFullDate(date: string, time: string) {
 
 export default async function ReservationDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
 }) {
-  const { id } = await params;
+  const [{ id }, { saved }] = await Promise.all([params, searchParams]);
   const r = await getReservationById(Number(id));
   if (!r) notFound();
 
@@ -33,6 +45,19 @@ export default async function ReservationDetailPage({
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-8 max-w-4xl">
+
+      {/* 保存成功バナー */}
+      {saved === '1' && (
+        <div className="flex items-center gap-3 bg-[#ebfaee] border border-[#006e1c]/20 rounded-xl px-5 py-3.5 mb-6 shadow-sm">
+          <span
+            className="material-symbols-outlined text-[#006e1c] shrink-0"
+            style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1" }}
+          >
+            check_circle
+          </span>
+          <p className="text-sm font-bold text-[#005313]">予約情報を保存しました</p>
+        </div>
+      )}
 
       {/* パンくず + ヘッダー */}
       <div className="mb-6 md:mb-8">
@@ -146,16 +171,8 @@ export default async function ReservationDetailPage({
                 <h3 className="text-sm font-bold text-[#1a3844]">通知ステータス</h3>
               </div>
               <div className="space-y-3">
-                <NotificationRow
-                  label="予約確認通知"
-                  sent={r.confirmation_sent}
-                  name="confirmation_sent"
-                />
-                <NotificationRow
-                  label="前日リマインド"
-                  sent={r.reminder_sent}
-                  name="reminder_sent"
-                />
+                <NotificationRow label="予約確認通知" sent={r.confirmation_sent} name="confirmation_sent" />
+                <NotificationRow label="前日リマインド" sent={r.reminder_sent} name="reminder_sent" />
               </div>
               <p className="text-[10px] text-[#757684] mt-4 leading-relaxed">
                 通知を送付後、手動でフラグを更新してください。
@@ -205,18 +222,14 @@ function EditField({
     <div className={colSpan === 2 ? 'sm:col-span-2' : ''}>
       <label className="flex items-center gap-1.5 text-xs font-bold text-[#444653] mb-1.5">
         {label}
-        {required && <span className="text-error text-[#ba1a1a]">*</span>}
+        {required && <span className="text-[#ba1a1a]">*</span>}
       </label>
       {children}
     </div>
   );
 }
 
-function NotificationRow({
-  label, sent, name,
-}: {
-  label: string; sent: boolean; name: string;
-}) {
+function NotificationRow({ label, sent, name }: { label: string; sent: boolean; name: string }) {
   return (
     <div className="flex items-center justify-between bg-[#f3f4f5] rounded-lg px-4 py-3">
       <div className="flex items-center gap-2">

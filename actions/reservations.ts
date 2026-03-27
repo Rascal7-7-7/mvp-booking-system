@@ -13,7 +13,7 @@ export async function createReservationAction(formData: FormData) {
     service_name:     String(formData.get('service_name')     ?? ''),
     note:             String(formData.get('note')             ?? ''),
   });
-  redirect(`/reservations/${id}`);
+  redirect(`/reservations/${id}?saved=1`);
 }
 
 export async function updateReservationAction(id: number, formData: FormData) {
@@ -29,5 +29,5 @@ export async function updateReservationAction(id: number, formData: FormData) {
     confirmation_sent: formData.get('confirmation_sent') === 'true',
     reminder_sent:     formData.get('reminder_sent')     === 'true',
   });
-  redirect(`/reservations/${id}`);
+  redirect(`/reservations/${id}?saved=1`);
 }

@@ -1,9 +1,14 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getReservationsByDate } from '@/lib/reservations';
 import StatusBadge from '@/components/StatusBadge';
 import type { ReservationStatus } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'スケジュール | 予約管理システム',
+};
 
 function addDays(dateStr: string, days: number) {
   const d = new Date(dateStr + 'T00:00:00');
@@ -38,9 +43,20 @@ export default async function SchedulePage({
   const active     = reservations.filter(r => r.status !== 'canceled');
   const unnotified = reservations.filter(r => !r.confirmation_sent && r.status === 'pending');
 
-  const HOURS     = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
-  const START_MIN = 9 * 60;
-  const SLOT_H    = 96;
+  // 予約時間から動的に時間範囲を計算（±1時間のパディング）
+  const SLOT_H = 96;
+  const { HOURS, START_MIN } = (() => {
+    if (reservations.length === 0) {
+      return { HOURS: [9, 10, 11, 12, 13, 14, 15, 16, 17], START_MIN: 9 * 60 };
+    }
+    const allMin = reservations.map(r => toMinutes(r.reservation_time));
+    const startH = Math.max(7, Math.floor(Math.min(...allMin) / 60) - 1);
+    const endH   = Math.min(22, Math.ceil(Math.max(...allMin) / 60) + 1);
+    return {
+      HOURS:     Array.from({ length: endH - startH + 1 }, (_, i) => startH + i),
+      START_MIN: startH * 60,
+    };
+  })();
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-8 max-w-4xl">
@@ -120,15 +136,12 @@ export default async function SchedulePage({
               </div>
 
               {/* 予約カード エリア */}
-              <div
-                className="relative"
-                style={{ height: `${SLOT_H * HOURS.length}px` }}
-              >
+              <div className="relative" style={{ height: `${SLOT_H * HOURS.length}px` }}>
                 {HOURS.map(h => (
                   <div
                     key={h}
                     className="absolute left-0 right-0 border-t border-[#f3f4f5]"
-                    style={{ top: `${(h - 9) * SLOT_H + 3}px` }}
+                    style={{ top: `${(h - HOURS[0]) * SLOT_H + 3}px` }}
                   />
                 ))}
 
@@ -148,11 +161,11 @@ export default async function SchedulePage({
                         className="h-full px-4 py-2.5 flex items-start justify-between bg-white ring-1 ring-[#c4c5d5]/20 rounded-lg"
                         style={{
                           borderLeft: `4px solid ${
-                            isCanceled         ? '#c4c5d5' :
-                            needsAttention     ? '#ba1a1a' :
+                            isCanceled             ? '#c4c5d5' :
+                            needsAttention         ? '#ba1a1a' :
                             r.status === 'completed' ? '#006e1c' :
                             r.status === 'confirmed' ? '#00288e' :
-                                             '#1a3844'
+                                                   '#1a3844'
                           }`,
                         }}
                       >
@@ -211,11 +224,11 @@ export default async function SchedulePage({
                   className={`flex items-start gap-3 bg-white rounded-xl px-4 py-4 shadow-sm ${isCanceled ? 'opacity-40' : ''}`}
                   style={{
                     borderLeft: `4px solid ${
-                      isCanceled         ? '#c4c5d5' :
-                      needsAttention     ? '#ba1a1a' :
+                      isCanceled             ? '#c4c5d5' :
+                      needsAttention         ? '#ba1a1a' :
                       r.status === 'completed' ? '#006e1c' :
                       r.status === 'confirmed' ? '#00288e' :
-                                       '#1a3844'
+                                             '#1a3844'
                     }`,
                   }}
                 >

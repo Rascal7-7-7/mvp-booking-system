@@ -1,5 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { createReservationAction } from '@/actions/reservations';
+
+export const metadata: Metadata = {
+  title: '新規予約登録 | 予約管理システム',
+};
 
 const SERVICES = [
   'カット',
@@ -94,7 +99,7 @@ export default function NewReservationPage() {
 
           {/* モバイル用送信ボタン */}
           <div className="flex gap-3 md:hidden">
-            <Link href="/reservations" className="flex-1 py-3 text-center text-sm text-[#444653] hover:text-[#191c1d] bg-[#e1e3e4] rounded-lg font-bold">
+            <Link href="/reservations" className="flex-1 py-3 text-center text-sm text-[#444653] bg-[#e1e3e4] rounded-lg font-bold">
               キャンセル
             </Link>
             <button
@@ -102,7 +107,7 @@ export default function NewReservationPage() {
               className="flex-1 py-3 text-white text-sm font-black rounded-lg shadow-md flex items-center justify-center gap-2"
               style={{ background: 'linear-gradient(135deg, #00288e, #1e40af)' }}
             >
-              予約を登録する
+              登録する
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>check_circle</span>
             </button>
           </div>
@@ -112,18 +117,29 @@ export default function NewReservationPage() {
         <div className="hidden md:block">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#e7e8e9] sticky top-8">
             <h3 className="text-xs font-bold text-[#00288e] flex items-center gap-1.5 mb-5">
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
-              登録内容の確認
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>info</span>
+              登録の流れ
             </h3>
-            <div className="space-y-4">
-              <PreviewItem icon="account_circle" label="お客様" value="入力してください" />
-              <PreviewItem icon="schedule" label="スケジュール" value="日付・時間を選択" />
-              <PreviewItem icon="spa" label="メニュー" value="サービスを選択" />
-            </div>
+            <ol className="space-y-4">
+              {[
+                { icon: 'person', step: '01', label: 'お客様情報を入力', desc: '顧客名は必須です' },
+                { icon: 'calendar_today', step: '02', label: '日時を選択', desc: '予約日・時間を指定' },
+                { icon: 'spa', step: '03', label: 'サービスを選択', desc: 'メニューを選んでください' },
+                { icon: 'check_circle', step: '04', label: '登録ボタンを押す', desc: '一覧画面に反映されます' },
+              ].map(({ icon, step, label, desc }) => (
+                <li key={step} className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#dde1ff] flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[#00288e]" style={{ fontSize: '16px' }}>{icon}</span>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-[#00288e] tracking-widest">STEP {step}</p>
+                    <p className="text-xs font-bold text-[#1a3844] mt-0.5">{label}</p>
+                    <p className="text-[10px] text-[#757684] mt-0.5">{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
             <div className="mt-6 pt-5 border-t border-[#f3f4f5]">
-              <p className="text-[11px] text-[#757684] leading-relaxed mb-4">
-                内容に問題がなければ「予約を登録する」ボタンを押してください。
-              </p>
               <button
                 form="new-form"
                 type="submit"
@@ -155,11 +171,7 @@ const inputCls =
   'ring-1 ring-[#c4c5d5]/30 focus:ring-2 focus:ring-[#00288e] outline-none transition-all ' +
   'placeholder:text-[#757684]/60';
 
-function FormSection({
-  icon, title, children,
-}: {
-  icon: string; title: string; children: React.ReactNode;
-}) {
+function FormSection({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-xl p-5 md:p-7 shadow-sm">
       <div className="flex items-center gap-2 mb-4 md:mb-5 pb-4 border-b border-[#f3f4f5]">
@@ -171,11 +183,7 @@ function FormSection({
   );
 }
 
-function Field({
-  label, required, colSpan, children,
-}: {
-  label: string; required?: boolean; colSpan?: number; children: React.ReactNode;
-}) {
+function Field({ label, required, colSpan, children }: { label: string; required?: boolean; colSpan?: number; children: React.ReactNode }) {
   return (
     <div className={colSpan === 2 ? 'sm:col-span-2' : ''}>
       <label className="flex items-center gap-1.5 text-xs font-bold text-[#444653] mb-1.5">
@@ -186,20 +194,6 @@ function Field({
         }
       </label>
       {children}
-    </div>
-  );
-}
-
-function PreviewItem({ icon, label, value }: { icon: string; label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="w-9 h-9 rounded-full bg-[#f3f4f5] flex items-center justify-center shrink-0">
-        <span className="material-symbols-outlined text-[#00288e]" style={{ fontSize: '18px' }}>{icon}</span>
-      </div>
-      <div>
-        <p className="text-[9px] font-bold text-[#757684] uppercase tracking-wide">{label}</p>
-        <p className="text-xs font-bold text-[#1a3844] mt-0.5">{value}</p>
-      </div>
     </div>
   );
 }

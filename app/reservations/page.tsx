@@ -1,5 +1,10 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getReservations, getSummary } from '@/lib/reservations';
+
+export const metadata: Metadata = {
+  title: '予約一覧 | 予約管理システム',
+};
 import StatusBadge from '@/components/StatusBadge';
 import NotificationBadge from '@/components/NotificationBadge';
 import type { ReservationStatus } from '@/lib/types';
