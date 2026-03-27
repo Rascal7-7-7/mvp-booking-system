@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Link from 'next/link';
+import NavItem from '@/components/NavItem';
 
 export const metadata: Metadata = {
   title: '予約管理システム',
@@ -67,17 +67,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
       </body>
     </html>
-  );
-}
-
-function NavItem({ href, icon, label }: { href: string; icon: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 text-[#444653] px-4 py-3 rounded-lg hover:bg-white/60 hover:translate-x-0.5 transition-all text-sm"
-    >
-      <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{icon}</span>
-      <span>{label}</span>
-    </Link>
   );
 }

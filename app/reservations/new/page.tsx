@@ -30,7 +30,7 @@ export default function NewReservationPage() {
       <div className="grid grid-cols-3 gap-7">
 
         {/* フォーム本体 */}
-        <form action={createReservationAction} className="col-span-2 space-y-6">
+        <form id="new-form" action={createReservationAction} className="col-span-2 space-y-6">
 
           {/* お客様情報 */}
           <FormSection icon="person" title="お客様情報">
