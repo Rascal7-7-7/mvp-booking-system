@@ -10,36 +10,74 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja" className="h-full">
-      <body className="min-h-full flex flex-col bg-gray-50">
-        <header className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-14">
-              <div className="flex items-center gap-6">
-                <Link href="/reservations" className="text-base font-bold text-gray-900 hover:text-blue-600 transition-colors">
-                  予約管理
-                </Link>
-                <nav className="flex items-center gap-4 text-sm">
-                  <Link href="/reservations" className="text-gray-600 hover:text-gray-900 transition-colors">
-                    一覧
-                  </Link>
-                  <Link href="/schedule" className="text-gray-600 hover:text-gray-900 transition-colors">
-                    スケジュール
-                  </Link>
-                </nav>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-full flex bg-[#f8f9fa]">
+
+        {/* サイドバー */}
+        <aside className="fixed left-0 top-0 h-full w-64 flex flex-col p-6 z-50 bg-[#f3f4f5]">
+          {/* ロゴ */}
+          <div className="mb-10 px-2">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00288e] to-[#1e40af] flex items-center justify-center text-white">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>spa</span>
               </div>
-              <Link
-                href="/reservations/new"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <span>＋</span> 予約登録
-              </Link>
+              <div>
+                <h1 className="text-base font-black text-[#00288e] leading-tight">予約管理システム</h1>
+                <p className="text-[9px] text-[#757684] uppercase tracking-widest mt-0.5">Digital Sanctuary</p>
+              </div>
             </div>
           </div>
-        </header>
-        <main className="flex-1">
+
+          {/* ナビゲーション */}
+          <nav className="flex flex-col gap-1.5 flex-1">
+            <NavItem href="/reservations" icon="event_note" label="予約一覧" />
+            <NavItem href="/reservations/new" icon="add_circle" label="新規登録" />
+            <NavItem href="/schedule" icon="calendar_view_day" label="スケジュール" />
+          </nav>
+
+          {/* フッター */}
+          <div className="pt-5 border-t border-[#c4c5d5]/30">
+            <div className="flex items-center gap-3 px-2">
+              <div className="w-8 h-8 rounded-full bg-[#1e40af]/10 flex items-center justify-center">
+                <span className="material-symbols-outlined text-[#00288e]" style={{ fontSize: '16px' }}>account_circle</span>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#191c1d]">管理者</p>
+                <p className="text-[10px] text-[#757684]">店舗マネージャー</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* メインコンテンツ */}
+        <main className="ml-64 flex-1 min-h-screen">
           {children}
         </main>
+
       </body>
     </html>
+  );
+}
+
+function NavItem({ href, icon, label }: { href: string; icon: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 text-[#444653] px-4 py-3 rounded-lg hover:bg-white/60 hover:translate-x-0.5 transition-all text-sm"
+    >
+      <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>{icon}</span>
+      <span>{label}</span>
+    </Link>
   );
 }

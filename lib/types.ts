@@ -7,11 +7,12 @@ export const STATUS_LABEL: Record<ReservationStatus, string> = {
   canceled:  'キャンセル',
 };
 
+// 受付=グレー / 確定=青 / 完了=緑 / キャンセル=赤
 export const STATUS_COLOR: Record<ReservationStatus, string> = {
-  pending:   'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  completed: 'bg-green-100 text-green-800',
-  canceled:  'bg-gray-100 text-gray-500',
+  pending:   'bg-[#e7e8e9] text-[#444653]',
+  confirmed: 'bg-[#dde1ff] text-[#173bab]',
+  completed: 'bg-[#98f994] text-[#005313]',
+  canceled:  'bg-[#ffdad6] text-[#93000a]',
 };
 
 export interface Reservation {

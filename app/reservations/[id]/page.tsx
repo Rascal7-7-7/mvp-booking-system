@@ -3,15 +3,21 @@ import { notFound } from 'next/navigation';
 import { getReservationById } from '@/lib/reservations';
 import { updateReservationAction } from '@/actions/reservations';
 import StatusBadge from '@/components/StatusBadge';
-import NotificationBadge from '@/components/NotificationBadge';
-import type { ReservationStatus } from '@/lib/types';
+import { STATUS_LABEL, type ReservationStatus } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-function formatDateTime(date: string, time: string) {
+const SERVICES = [
+  'カット','カット＆カラー','カット＆トリートメント',
+  'カラーリング','パーマ','ヘッドスパ','トリートメント','その他',
+];
+
+const STATUSES: ReservationStatus[] = ['pending', 'confirmed', 'completed', 'canceled'];
+
+function formatFullDate(date: string, time: string) {
   const d = new Date(date + 'T00:00:00');
-  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${weekdays[d.getDay()]}）${time}`;
+  const w = ['日','月','火','水','木','金','土'][d.getDay()];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${w}） ${time}`;
 }
 
 export default async function ReservationDetailPage({
@@ -20,196 +26,222 @@ export default async function ReservationDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const reservation = await getReservationById(Number(id));
-  if (!reservation) notFound();
+  const r = await getReservationById(Number(id));
+  if (!r) notFound();
 
-  const updateAction = updateReservationAction.bind(null, reservation.id);
+  const updateAction = updateReservationAction.bind(null, r.id);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      {/* ヘッダー */}
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <Link href="/reservations" className="text-sm text-gray-500 hover:text-gray-700">
-            ← 一覧に戻る
-          </Link>
-          <h1 className="text-xl font-bold text-gray-900 mt-2">予約詳細 / 編集</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            登録日時：{new Date(reservation.created_at).toLocaleString('ja-JP')}
-          </p>
+    <div className="px-10 py-8 max-w-4xl">
+
+      {/* パンくず + ヘッダー */}
+      <div className="mb-8">
+        <nav className="flex items-center gap-1.5 text-xs text-[#757684] mb-3">
+          <Link href="/reservations" className="hover:text-[#00288e] transition-colors">予約一覧</Link>
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
+          <span className="text-[#00288e] font-bold">予約詳細 #{String(r.id).padStart(6, '0')}</span>
+        </nav>
+        <div className="flex items-end justify-between">
+          <div>
+            <h1 className="text-3xl font-black text-[#1a3844] flex items-center gap-3">
+              {r.customer_name} <span className="text-base font-normal text-[#444653]">様 · 予約編集</span>
+            </h1>
+            <p className="text-xs text-[#757684] mt-1">
+              登録日時：{new Date(r.created_at).toLocaleString('ja-JP')}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Link
+              href="/reservations"
+              className="px-5 py-2.5 rounded-lg bg-[#e1e3e4] text-[#191c1d] text-sm font-bold hover:bg-[#d9dadb] transition-colors"
+            >
+              一覧に戻る
+            </Link>
+            <button
+              form="edit-form"
+              type="submit"
+              className="px-7 py-2.5 rounded-lg text-white text-sm font-bold shadow-md hover:opacity-90 active:scale-95 transition-all"
+              style={{ background: 'linear-gradient(135deg, #00288e, #1e40af)' }}
+            >
+              更新を保存する
+            </button>
+          </div>
         </div>
-        <StatusBadge status={reservation.status as ReservationStatus} />
       </div>
 
-      {/* 通知状態バナー */}
-      {!reservation.confirmation_sent && reservation.status !== 'canceled' && reservation.status !== 'completed' && (
-        <div className="mb-5 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-          <span>⚠</span>
-          確認通知が未送信です。対応後に通知状態を更新してください。
-        </div>
-      )}
+      <form id="edit-form" action={updateAction}>
+        <div className="grid grid-cols-12 gap-6">
 
-      <form action={updateAction} className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100">
+          {/* 左カラム */}
+          <div className="col-span-8 space-y-6">
 
-        {/* お客様情報 */}
-        <div className="px-6 py-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700">お客様情報</h2>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              お客様名 <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="customer_name"
-              required
-              defaultValue={reservation.customer_name}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
-              <input
-                type="email"
-                name="customer_email"
-                defaultValue={reservation.customer_email ?? ''}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+            {/* ステータス切り替え */}
+            <div className="bg-[#f3f4f5] p-1 rounded-xl flex gap-1">
+              {STATUSES.map(s => (
+                <label
+                  key={s}
+                  className={`flex-1 flex flex-col items-center justify-center py-3 rounded-lg cursor-pointer transition-all ${
+                    r.status === s
+                      ? 'bg-white shadow-sm'
+                      : 'hover:bg-white/50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="status"
+                    value={s}
+                    defaultChecked={r.status === s}
+                    className="sr-only"
+                  />
+                  <span className={`text-[10px] font-bold mb-0.5 ${r.status === s ? 'text-[#00288e]' : 'text-[#757684]'}`}>
+                    {r.status === s ? '現在' : '　'}
+                  </span>
+                  <span className={`text-sm font-bold ${r.status === s ? 'text-[#191c1d]' : 'text-[#c4c5d5]'}`}>
+                    {STATUS_LABEL[s]}
+                  </span>
+                </label>
+              ))}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">電話番号</label>
-              <input
-                type="tel"
-                name="customer_phone"
-                defaultValue={reservation.customer_phone ?? ''}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-        </div>
 
-        {/* 予約内容 */}
-        <div className="px-6 py-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700">予約内容</h2>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-500 mb-1">予約日時</label>
-            <p className="text-sm font-medium text-gray-900 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
-              {formatDateTime(reservation.reservation_date, reservation.reservation_time)}
-            </p>
-            {/* hidden で保持 */}
-            <input type="hidden" name="reservation_date" value={reservation.reservation_date} />
-            <input type="hidden" name="reservation_time" value={reservation.reservation_time} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              サービス内容 <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="service_name"
-              required
-              defaultValue={reservation.service_name}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-            >
-              <option value="カット">カット</option>
-              <option value="カット＆カラー">カット＆カラー</option>
-              <option value="カット＆トリートメント">カット＆トリートメント</option>
-              <option value="カラーリング">カラーリング</option>
-              <option value="パーマ">パーマ</option>
-              <option value="ヘッドスパ">ヘッドスパ</option>
-              <option value="トリートメント">トリートメント</option>
-              <option value="その他">その他</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">備考</label>
-            <textarea
-              name="note"
-              rows={3}
-              defaultValue={reservation.note ?? ''}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            />
-          </div>
-        </div>
-
-        {/* ステータス */}
-        <div className="px-6 py-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700">対応状態</h2>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
-            <select
-              name="status"
-              defaultValue={reservation.status}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-            >
-              <option value="pending">受付</option>
-              <option value="confirmed">確定</option>
-              <option value="completed">完了</option>
-              <option value="canceled">キャンセル</option>
-            </select>
-          </div>
-        </div>
-
-        {/* 通知状態 */}
-        <div className="px-6 py-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700">通知状態</h2>
-          <p className="text-xs text-gray-500">対応完了後に手動で更新してください</p>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-lg border border-gray-200 bg-gray-50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">確認通知</span>
-                <NotificationBadge sent={reservation.confirmation_sent} />
+            {/* 予約内容 */}
+            <Section icon="event" title="予約内容詳細">
+              <div className="grid grid-cols-2 gap-5">
+                <EditField label="顧客名" required>
+                  <input type="text" name="customer_name" required defaultValue={r.customer_name} className={inputCls} />
+                </EditField>
+                <EditField label="電話番号">
+                  <input type="tel" name="customer_phone" defaultValue={r.customer_phone ?? ''} className={inputCls} />
+                </EditField>
+                <EditField label="メールアドレス" colSpan={2}>
+                  <input type="email" name="customer_email" defaultValue={r.customer_email ?? ''} className={inputCls} />
+                </EditField>
+                <EditField label="予約日時" colSpan={2}>
+                  <p className="bg-[#f3f4f5] rounded-lg px-4 py-3 text-sm font-medium text-[#191c1d]">
+                    {formatFullDate(r.reservation_date, r.reservation_time)}
+                  </p>
+                  <input type="hidden" name="reservation_date" value={r.reservation_date} />
+                  <input type="hidden" name="reservation_time" value={r.reservation_time} />
+                </EditField>
+                <EditField label="サービス内容" required colSpan={2}>
+                  <select name="service_name" required defaultValue={r.service_name} className={inputCls}>
+                    {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </EditField>
+                <EditField label="備考・特別リクエスト" colSpan={2}>
+                  <textarea name="note" rows={3} defaultValue={r.note ?? ''} className={`${inputCls} resize-none`} />
+                </EditField>
               </div>
-              <select
-                name="confirmation_sent"
-                defaultValue={String(reservation.confirmation_sent)}
-                className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              >
-                <option value="false">未送信</option>
-                <option value="true">送信済み</option>
-              </select>
+            </Section>
+
+          </div>
+
+          {/* 右カラム */}
+          <div className="col-span-4 space-y-5">
+
+            {/* 通知ステータス */}
+            <div
+              className="bg-white rounded-xl p-6 shadow-sm"
+              style={{ borderLeft: '4px solid #00288e' }}
+            >
+              <div className="flex items-center gap-2 mb-5">
+                <span className="material-symbols-outlined text-[#00288e]" style={{ fontSize: '20px' }}>notifications</span>
+                <h3 className="text-sm font-bold text-[#1a3844]">通知ステータス</h3>
+              </div>
+              <div className="space-y-3">
+                <NotificationRow
+                  label="予約確認通知"
+                  sent={r.confirmation_sent}
+                  name="confirmation_sent"
+                />
+                <NotificationRow
+                  label="前日リマインド"
+                  sent={r.reminder_sent}
+                  name="reminder_sent"
+                />
+              </div>
+              <p className="text-[10px] text-[#757684] mt-4 leading-relaxed">
+                通知を送付後、手動でフラグを更新してください。
+              </p>
             </div>
 
-            <div className="p-4 rounded-lg border border-gray-200 bg-gray-50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">リマインド通知</span>
-                <NotificationBadge sent={reservation.reminder_sent} />
-              </div>
-              <select
-                name="reminder_sent"
-                defaultValue={String(reservation.reminder_sent)}
-                className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              >
-                <option value="false">未送信</option>
-                <option value="true">送信済み</option>
-              </select>
+            {/* 現在ステータス確認 */}
+            <div className="bg-white rounded-xl p-5 shadow-sm">
+              <p className="text-[10px] font-bold text-[#757684] uppercase tracking-wide mb-2">現在の状態</p>
+              <StatusBadge status={r.status as ReservationStatus} />
+              <p className="text-[10px] text-[#757684] mt-2">
+                最終更新：{new Date(r.updated_at).toLocaleString('ja-JP')}
+              </p>
             </div>
+
           </div>
         </div>
-
-        {/* 保存ボタン */}
-        <div className="px-6 py-4 bg-gray-50 rounded-b-xl flex items-center justify-between">
-          <Link
-            href="/reservations"
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            キャンセル
-          </Link>
-          <button
-            type="submit"
-            className="inline-flex items-center px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-          >
-            変更を保存する
-          </button>
-        </div>
-
       </form>
+    </div>
+  );
+}
+
+/* ---- サブコンポーネント ---- */
+
+const inputCls =
+  'w-full bg-[#f3f4f5] border-0 rounded-lg px-4 py-3 text-sm text-[#191c1d] font-medium ' +
+  'focus:ring-2 focus:ring-[#00288e] outline-none transition-all';
+
+function Section({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl p-7 shadow-sm">
+      <div className="flex items-center gap-2 mb-5 pb-4 border-b border-[#f3f4f5]">
+        <span className="material-symbols-outlined text-[#00288e]" style={{ fontSize: '20px' }}>{icon}</span>
+        <h2 className="text-sm font-bold text-[#1a3844]">{title}</h2>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function EditField({
+  label, required, colSpan, children,
+}: {
+  label: string; required?: boolean; colSpan?: number; children: React.ReactNode;
+}) {
+  return (
+    <div className={colSpan === 2 ? 'col-span-2' : ''}>
+      <label className="flex items-center gap-1.5 text-xs font-bold text-[#444653] mb-1.5">
+        {label}
+        {required && <span className="text-error text-[#ba1a1a]">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function NotificationRow({
+  label, sent, name,
+}: {
+  label: string; sent: boolean; name: string;
+}) {
+  return (
+    <div className="flex items-center justify-between bg-[#f3f4f5] rounded-lg px-4 py-3">
+      <div className="flex items-center gap-2">
+        <span
+          className="material-symbols-outlined"
+          style={{
+            fontSize: '18px',
+            color: sent ? '#006e1c' : '#c4c5d5',
+            fontVariationSettings: sent ? "'FILL' 1" : "'FILL' 0",
+          }}
+        >
+          check_circle
+        </span>
+        <span className="text-sm font-medium text-[#191c1d]">{label}</span>
+      </div>
+      <select
+        name={name}
+        defaultValue={String(sent)}
+        className="text-[10px] font-black px-2 py-1 rounded bg-white ring-1 ring-[#c4c5d5]/30 outline-none cursor-pointer"
+      >
+        <option value="false">未送信</option>
+        <option value="true">送信済み</option>
+      </select>
     </div>
   );
 }

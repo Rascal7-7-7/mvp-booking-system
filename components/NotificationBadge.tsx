@@ -1,13 +1,17 @@
-export default function NotificationBadge({ sent }: { sent: boolean }) {
+export default function NotificationBadge({ sent, label }: { sent: boolean; label?: string }) {
   return sent ? (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-      <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-      送信済み
-    </span>
+    <div className="flex flex-col items-center gap-0.5">
+      <span className="material-symbols-outlined text-[#006e1c]" style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1" }}>
+        check_circle
+      </span>
+      {label && <span className="text-[9px] text-[#444653]">{label}</span>}
+    </div>
   ) : (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
-      <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block" />
-      未送信
-    </span>
+    <div className="flex flex-col items-center gap-0.5">
+      <span className="material-symbols-outlined text-[#757684]" style={{ fontSize: '20px' }}>
+        mail
+      </span>
+      {label && <span className="text-[9px] text-[#757684]">{label}</span>}
+    </div>
   );
 }
