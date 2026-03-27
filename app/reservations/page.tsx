@@ -14,8 +14,10 @@ function formatDate(dateStr: string) {
 export default async function ReservationsPage() {
   const [reservations, summary] = await Promise.all([getReservations(), getSummary()]);
   const today = new Date().toISOString().slice(0, 10);
-  const todayList  = reservations.filter(r => r.reservation_date === today);
-  const otherList  = reservations.filter(r => r.reservation_date !== today);
+
+  const todayList    = reservations.filter(r => r.reservation_date === today);
+  const upcomingList = reservations.filter(r => r.reservation_date > today);
+  const pastList     = reservations.filter(r => r.reservation_date < today);
 
   return (
     <div className="px-4 md:px-10 py-6 md:py-8 max-w-5xl">
@@ -47,11 +49,11 @@ export default async function ReservationsPage() {
           sub={todayList.length > 0 ? `${todayList.filter(r => r.status !== 'canceled').length}件 対応予定` : undefined}
         />
         <SummaryCard
-          label="受付中"
+          label="本日 受付中"
           value={summary.pending_count}
           unit="件"
           accent="#1a3844"
-          sub={summary.pending_count > 0 ? '確認が必要な予約があります' : undefined}
+          sub={summary.pending_count > 0 ? '確定待ちの予約があります' : '確定待ちなし'}
         />
         <SummaryCard
           label="未通知"
@@ -69,10 +71,16 @@ export default async function ReservationsPage() {
         <ReservationList rows={todayList} today={today} highlightToday />
       </section>
 
-      {/* その他の予約 */}
+      {/* 近日の予約 */}
+      <section className="mb-8">
+        <SectionHeader label="近日の予約" count={upcomingList.length} dot="#1a3844" />
+        <ReservationList rows={upcomingList} today={today} />
+      </section>
+
+      {/* 過去の予約 */}
       <section>
-        <SectionHeader label="その他の予約" count={otherList.length} dot="#c4c5d5" />
-        <ReservationList rows={otherList} today={today} />
+        <SectionHeader label="過去の予約" count={pastList.length} dot="#c4c5d5" muted />
+        <ReservationList rows={[...pastList].reverse()} today={today} muted />
       </section>
     </div>
   );
@@ -107,11 +115,15 @@ function SummaryCard({
   );
 }
 
-function SectionHeader({ label, count, dot }: { label: string; count: number; dot: string }) {
+function SectionHeader({
+  label, count, dot, muted = false,
+}: {
+  label: string; count: number; dot: string; muted?: boolean;
+}) {
   return (
     <div className="flex items-center gap-2 mb-3">
       <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: dot }} />
-      <h2 className="text-sm font-bold text-[#444653]">
+      <h2 className={`text-sm font-bold ${muted ? 'text-[#757684]' : 'text-[#444653]'}`}>
         {label}
         <span className="ml-2 text-[#757684] font-normal">（{count}件）</span>
       </h2>
@@ -120,15 +132,16 @@ function SectionHeader({ label, count, dot }: { label: string; count: number; do
 }
 
 function ReservationList({
-  rows, today, highlightToday = false,
+  rows, today, highlightToday = false, muted = false,
 }: {
   rows: Awaited<ReturnType<typeof getReservations>>;
   today: string;
   highlightToday?: boolean;
+  muted?: boolean;
 }) {
   if (rows.length === 0) {
     return (
-      <div className="bg-white rounded-xl px-6 py-10 text-center text-sm text-[#757684] shadow-sm">
+      <div className="bg-white rounded-xl px-6 py-8 text-center text-sm text-[#757684] shadow-sm">
         該当する予約はありません
       </div>
     );
@@ -159,7 +172,7 @@ function ReservationList({
             key={r.id}
             href={`/reservations/${r.id}`}
             className={`flex md:grid md:grid-cols-12 items-center bg-white px-4 py-3 md:py-4 rounded-xl shadow-sm transition-shadow hover:shadow-md gap-3 md:gap-0 ${
-              r.status === 'canceled' ? 'opacity-50' : ''
+              r.status === 'canceled' || muted ? 'opacity-50' : ''
             } ${borderCls}`}
           >
             {/* 日時 */}
