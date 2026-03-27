@@ -22,10 +22,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex bg-[#f8f9fa]">
+      <body className="min-h-full flex flex-col md:flex-row bg-[#f8f9fa]">
 
-        {/* サイドバー */}
-        <aside className="fixed left-0 top-0 h-full w-64 flex flex-col p-6 z-50 bg-[#f3f4f5]">
+        {/* モバイル: トップヘッダー */}
+        <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#f3f4f5] flex items-center justify-between px-4 h-14 border-b border-[#c4c5d5]/20">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#00288e] to-[#1e40af] flex items-center justify-center text-white">
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>spa</span>
+            </div>
+            <span className="text-sm font-black text-[#00288e]">予約管理システム</span>
+          </div>
+        </header>
+
+        {/* デスクトップ: サイドバー */}
+        <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col p-6 z-50 bg-[#f3f4f5]">
           {/* ロゴ */}
           <div className="mb-10 px-2">
             <div className="flex items-center gap-3 mb-1">
@@ -61,9 +71,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </aside>
 
         {/* メインコンテンツ */}
-        <main className="ml-64 flex-1 min-h-screen">
+        <main className="flex-1 min-h-screen pt-14 pb-20 md:pt-0 md:pb-0 md:ml-64">
           {children}
         </main>
+
+        {/* モバイル: ボトムナビ */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#e7e8e9] flex">
+          <NavItem href="/reservations" icon="event_note" label="予約一覧" mobile />
+          <NavItem href="/reservations/new" icon="add_circle" label="新規登録" mobile />
+          <NavItem href="/schedule" icon="calendar_view_day" label="スケジュール" mobile />
+        </nav>
 
       </body>
     </html>

@@ -18,26 +18,27 @@ export default async function ReservationsPage() {
   const otherList  = reservations.filter(r => r.reservation_date !== today);
 
   return (
-    <div className="px-10 py-8 max-w-5xl">
+    <div className="px-4 md:px-10 py-6 md:py-8 max-w-5xl">
 
       {/* ページヘッダー */}
-      <div className="flex items-end justify-between mb-8">
+      <div className="flex items-end justify-between mb-6 md:mb-8">
         <div>
           <p className="text-[11px] font-bold text-[#00288e] uppercase tracking-widest mb-1">Reservation Manager</p>
-          <h1 className="text-2xl font-black text-[#1a3844]">予約一覧</h1>
+          <h1 className="text-xl md:text-2xl font-black text-[#1a3844]">予約一覧</h1>
         </div>
         <Link
           href="/reservations/new"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-bold shadow-sm transition-all hover:shadow-md"
+          className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-lg text-white text-xs md:text-sm font-bold shadow-sm transition-all hover:shadow-md"
           style={{ background: 'linear-gradient(135deg, #00288e, #1e40af)' }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-          新規予約
+          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+          <span className="hidden sm:inline">新規予約</span>
+          <span className="sm:hidden">新規</span>
         </Link>
       </div>
 
       {/* サマリーカード */}
-      <div className="grid grid-cols-3 gap-5 mb-10">
+      <div className="grid grid-cols-3 gap-3 md:gap-5 mb-8 md:mb-10">
         <SummaryCard
           label="本日の予約"
           value={summary.total_today}
@@ -53,11 +54,11 @@ export default async function ReservationsPage() {
           sub={summary.pending_count > 0 ? '確認が必要な予約があります' : undefined}
         />
         <SummaryCard
-          label="未通知（本日）"
+          label="未通知"
           value={summary.unnotified}
           unit="件"
           accent="#ba1a1a"
-          sub={summary.unnotified > 0 ? '確認通知が未送信です' : '対応が必要な未通知はありません'}
+          sub={summary.unnotified > 0 ? '確認通知が未送信です' : '未通知なし'}
           alert={summary.unnotified > 0}
         />
       </div>
@@ -65,13 +66,13 @@ export default async function ReservationsPage() {
       {/* 本日の予約 */}
       <section className="mb-8">
         <SectionHeader label="本日の予約" count={todayList.length} dot="#00288e" />
-        <ReservationTable rows={todayList} today={today} highlightToday />
+        <ReservationList rows={todayList} today={today} highlightToday />
       </section>
 
       {/* その他の予約 */}
       <section>
         <SectionHeader label="その他の予約" count={otherList.length} dot="#c4c5d5" />
-        <ReservationTable rows={otherList} today={today} />
+        <ReservationList rows={otherList} today={today} />
       </section>
     </div>
   );
@@ -87,18 +88,18 @@ function SummaryCard({
 }) {
   return (
     <div
-      className="bg-white rounded-xl p-6 shadow-sm flex flex-col justify-between"
+      className="bg-white rounded-xl p-3 md:p-6 shadow-sm flex flex-col justify-between"
       style={{ borderBottom: `4px solid ${accent}` }}
     >
       <div>
-        <p className="text-xs font-bold text-[#444653] mb-2">{label}</p>
-        <p className="font-headline text-4xl font-extrabold" style={{ color: accent }}>
-          {value}<span className="text-base font-bold text-[#444653] ml-1">{unit}</span>
+        <p className="text-[9px] md:text-xs font-bold text-[#444653] mb-1 md:mb-2">{label}</p>
+        <p className="text-2xl md:text-4xl font-extrabold" style={{ color: accent }}>
+          {value}<span className="text-xs md:text-base font-bold text-[#444653] ml-0.5 md:ml-1">{unit}</span>
         </p>
       </div>
       {sub && (
-        <p className={`text-[11px] font-bold mt-3 flex items-center gap-1 ${alert ? 'text-[#ba1a1a]' : 'text-[#444653]'}`}>
-          {alert && <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>priority_high</span>}
+        <p className={`text-[9px] md:text-[11px] font-bold mt-2 md:mt-3 hidden sm:flex items-center gap-1 ${alert ? 'text-[#ba1a1a]' : 'text-[#444653]'}`}>
+          {alert && <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>priority_high</span>}
           {sub}
         </p>
       )}
@@ -118,7 +119,7 @@ function SectionHeader({ label, count, dot }: { label: string; count: number; do
   );
 }
 
-function ReservationTable({
+function ReservationList({
   rows, today, highlightToday = false,
 }: {
   rows: Awaited<ReturnType<typeof getReservations>>;
@@ -134,63 +135,71 @@ function ReservationTable({
   }
 
   return (
-    <div className="bg-[#f3f4f5] rounded-xl overflow-hidden">
-      {/* テーブルヘッダー */}
-      <div className="grid grid-cols-12 px-6 py-3 text-[10px] font-bold text-[#757684] uppercase tracking-widest">
+    <div className="space-y-2">
+      {/* デスクトップ: テーブルヘッダー */}
+      <div className="hidden md:grid grid-cols-12 px-4 py-2 text-[10px] font-bold text-[#757684] uppercase tracking-widest bg-[#f3f4f5] rounded-lg">
         <div className="col-span-2">予約日時</div>
         <div className="col-span-3">顧客名 / サービス</div>
         <div className="col-span-2 text-center">状態</div>
         <div className="col-span-2 text-center">確認通知</div>
         <div className="col-span-2 text-center">リマインド</div>
-        <div className="col-span-1 text-right" />
+        <div className="col-span-1" />
       </div>
 
-      <div className="space-y-1 px-2 pb-2">
-        {rows.map((r) => {
-          const isToday = r.reservation_date === today;
-          const needsAttention = !r.confirmation_sent && r.status === 'pending';
-          return (
-            <div
-              key={r.id}
-              className={`grid grid-cols-12 items-center bg-white px-4 py-4 rounded-lg transition-shadow hover:shadow-md ${
-                r.status === 'canceled' ? 'opacity-50' : ''
-              } ${needsAttention ? 'border-l-4 border-[#ba1a1a]' : highlightToday && isToday ? 'border-l-4 border-[#00288e]' : ''}`}
-            >
-              <div className="col-span-2">
-                <p className={`text-base font-black ${isToday ? 'text-[#00288e]' : 'text-[#191c1d]'}`}>
-                  {r.reservation_time}
-                </p>
-                <p className="text-[10px] font-bold text-[#757684] mt-0.5">
-                  {formatDate(r.reservation_date)}
-                </p>
-              </div>
-              <div className="col-span-3">
-                <p className="text-sm font-bold text-[#191c1d]">
-                  {r.customer_name} <span className="font-normal text-xs">様</span>
-                </p>
-                <p className="text-xs text-[#444653] mt-0.5">{r.service_name}</p>
-              </div>
-              <div className="col-span-2 flex justify-center">
-                <StatusBadge status={r.status as ReservationStatus} />
-              </div>
-              <div className="col-span-2 flex justify-center">
-                <NotificationBadge sent={r.confirmation_sent} label={r.confirmation_sent ? '送信済み' : '未送信'} />
-              </div>
-              <div className="col-span-2 flex justify-center">
-                <NotificationBadge sent={r.reminder_sent} label={r.reminder_sent ? '送信済み' : '未送信'} />
-              </div>
-              <div className="col-span-1 flex justify-end">
-                <Link
-                  href={`/reservations/${r.id}`}
-                  className="p-1.5 rounded-full text-[#757684] hover:text-[#00288e] hover:bg-[#dde1ff]/40 transition-colors"
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_right</span>
-                </Link>
-              </div>
+      {rows.map((r) => {
+        const isToday = r.reservation_date === today;
+        const needsAttention = !r.confirmation_sent && r.status === 'pending';
+        const borderCls = needsAttention
+          ? 'border-l-4 border-[#ba1a1a]'
+          : highlightToday && isToday
+          ? 'border-l-4 border-[#00288e]'
+          : '';
+        return (
+          <Link
+            key={r.id}
+            href={`/reservations/${r.id}`}
+            className={`flex md:grid md:grid-cols-12 items-center bg-white px-4 py-3 md:py-4 rounded-xl shadow-sm transition-shadow hover:shadow-md gap-3 md:gap-0 ${
+              r.status === 'canceled' ? 'opacity-50' : ''
+            } ${borderCls}`}
+          >
+            {/* 日時 */}
+            <div className="shrink-0 md:col-span-2">
+              <p className={`text-base font-black ${isToday ? 'text-[#00288e]' : 'text-[#191c1d]'}`}>
+                {r.reservation_time}
+              </p>
+              <p className="text-[10px] font-bold text-[#757684] mt-0.5">
+                {formatDate(r.reservation_date)}
+              </p>
             </div>
-          );
-        })}
-      </div>
+
+            {/* 顧客名・サービス */}
+            <div className="flex-1 min-w-0 md:col-span-3">
+              <p className="text-sm font-bold text-[#191c1d] truncate">
+                {r.customer_name} <span className="font-normal text-xs">様</span>
+              </p>
+              <p className="text-xs text-[#444653] truncate mt-0.5">{r.service_name}</p>
+            </div>
+
+            {/* ステータス */}
+            <div className="shrink-0 md:col-span-2 md:flex md:justify-center">
+              <StatusBadge status={r.status as ReservationStatus} />
+            </div>
+
+            {/* 確認通知・リマインド: デスクトップのみ */}
+            <div className="hidden md:flex col-span-2 justify-center">
+              <NotificationBadge sent={r.confirmation_sent} label={r.confirmation_sent ? '送信済み' : '未送信'} />
+            </div>
+            <div className="hidden md:flex col-span-2 justify-center">
+              <NotificationBadge sent={r.reminder_sent} label={r.reminder_sent ? '送信済み' : '未送信'} />
+            </div>
+
+            {/* 矢印 */}
+            <div className="shrink-0 md:col-span-1 md:flex md:justify-end">
+              <span className="material-symbols-outlined text-[#c4c5d5]" style={{ fontSize: '20px' }}>chevron_right</span>
+            </div>
+          </Link>
+        );
+      })}
     </div>
   );
 }

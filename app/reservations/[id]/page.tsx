@@ -32,18 +32,18 @@ export default async function ReservationDetailPage({
   const updateAction = updateReservationAction.bind(null, r.id);
 
   return (
-    <div className="px-10 py-8 max-w-4xl">
+    <div className="px-4 md:px-10 py-6 md:py-8 max-w-4xl">
 
       {/* パンくず + ヘッダー */}
-      <div className="mb-8">
+      <div className="mb-6 md:mb-8">
         <nav className="flex items-center gap-1.5 text-xs text-[#757684] mb-3">
           <Link href="/reservations" className="hover:text-[#00288e] transition-colors">予約一覧</Link>
           <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
           <span className="text-[#00288e] font-bold">予約詳細 #{String(r.id).padStart(6, '0')}</span>
         </nav>
-        <div className="flex items-end justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-[#1a3844] flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-black text-[#1a3844] flex items-center gap-3 flex-wrap">
               {r.customer_name} <span className="text-base font-normal text-[#444653]">様 · 予約編集</span>
             </h1>
             <p className="text-xs text-[#757684] mt-1">
@@ -53,14 +53,14 @@ export default async function ReservationDetailPage({
           <div className="flex gap-3">
             <Link
               href="/reservations"
-              className="px-5 py-2.5 rounded-lg bg-[#e1e3e4] text-[#191c1d] text-sm font-bold hover:bg-[#d9dadb] transition-colors"
+              className="px-4 md:px-5 py-2.5 rounded-lg bg-[#e1e3e4] text-[#191c1d] text-sm font-bold hover:bg-[#d9dadb] transition-colors"
             >
               一覧に戻る
             </Link>
             <button
               form="edit-form"
               type="submit"
-              className="px-7 py-2.5 rounded-lg text-white text-sm font-bold shadow-md hover:opacity-90 active:scale-95 transition-all"
+              className="px-5 md:px-7 py-2.5 rounded-lg text-white text-sm font-bold shadow-md hover:opacity-90 active:scale-95 transition-all"
               style={{ background: 'linear-gradient(135deg, #00288e, #1e40af)' }}
             >
               更新を保存する
@@ -70,20 +70,18 @@ export default async function ReservationDetailPage({
       </div>
 
       <form id="edit-form" action={updateAction}>
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
 
           {/* 左カラム */}
-          <div className="col-span-8 space-y-6">
+          <div className="md:col-span-8 space-y-6">
 
             {/* ステータス切り替え */}
             <div className="bg-[#f3f4f5] p-1 rounded-xl flex gap-1">
               {STATUSES.map(s => (
                 <label
                   key={s}
-                  className={`flex-1 flex flex-col items-center justify-center py-3 rounded-lg cursor-pointer transition-all ${
-                    r.status === s
-                      ? 'bg-white shadow-sm'
-                      : 'hover:bg-white/50'
+                  className={`flex-1 flex flex-col items-center justify-center py-2.5 md:py-3 rounded-lg cursor-pointer transition-all ${
+                    r.status === s ? 'bg-white shadow-sm' : 'hover:bg-white/50'
                   }`}
                 >
                   <input
@@ -93,10 +91,10 @@ export default async function ReservationDetailPage({
                     defaultChecked={r.status === s}
                     className="sr-only"
                   />
-                  <span className={`text-[10px] font-bold mb-0.5 ${r.status === s ? 'text-[#00288e]' : 'text-[#757684]'}`}>
+                  <span className={`text-[9px] md:text-[10px] font-bold mb-0.5 ${r.status === s ? 'text-[#00288e]' : 'text-[#757684]'}`}>
                     {r.status === s ? '現在' : '　'}
                   </span>
-                  <span className={`text-sm font-bold ${r.status === s ? 'text-[#191c1d]' : 'text-[#c4c5d5]'}`}>
+                  <span className={`text-xs md:text-sm font-bold ${r.status === s ? 'text-[#191c1d]' : 'text-[#c4c5d5]'}`}>
                     {STATUS_LABEL[s]}
                   </span>
                 </label>
@@ -105,7 +103,7 @@ export default async function ReservationDetailPage({
 
             {/* 予約内容 */}
             <Section icon="event" title="予約内容詳細">
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
                 <EditField label="顧客名" required>
                   <input type="text" name="customer_name" required defaultValue={r.customer_name} className={inputCls} />
                 </EditField>
@@ -136,11 +134,11 @@ export default async function ReservationDetailPage({
           </div>
 
           {/* 右カラム */}
-          <div className="col-span-4 space-y-5">
+          <div className="md:col-span-4 space-y-5">
 
             {/* 通知ステータス */}
             <div
-              className="bg-white rounded-xl p-6 shadow-sm"
+              className="bg-white rounded-xl p-5 md:p-6 shadow-sm"
               style={{ borderLeft: '4px solid #00288e' }}
             >
               <div className="flex items-center gap-2 mb-5">
@@ -188,8 +186,8 @@ const inputCls =
 
 function Section({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-xl p-7 shadow-sm">
-      <div className="flex items-center gap-2 mb-5 pb-4 border-b border-[#f3f4f5]">
+    <div className="bg-white rounded-xl p-5 md:p-7 shadow-sm">
+      <div className="flex items-center gap-2 mb-4 md:mb-5 pb-4 border-b border-[#f3f4f5]">
         <span className="material-symbols-outlined text-[#00288e]" style={{ fontSize: '20px' }}>{icon}</span>
         <h2 className="text-sm font-bold text-[#1a3844]">{title}</h2>
       </div>
@@ -204,7 +202,7 @@ function EditField({
   label: string; required?: boolean; colSpan?: number; children: React.ReactNode;
 }) {
   return (
-    <div className={colSpan === 2 ? 'col-span-2' : ''}>
+    <div className={colSpan === 2 ? 'sm:col-span-2' : ''}>
       <label className="flex items-center gap-1.5 text-xs font-bold text-[#444653] mb-1.5">
         {label}
         {required && <span className="text-error text-[#ba1a1a]">*</span>}

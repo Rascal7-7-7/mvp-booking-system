@@ -16,25 +16,25 @@ export default function NewReservationPage() {
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="px-10 py-8 max-w-5xl">
+    <div className="px-4 md:px-10 py-6 md:py-8 max-w-5xl">
 
       {/* ヘッダー */}
-      <div className="mb-10">
+      <div className="mb-8 md:mb-10">
         <p className="text-[11px] font-bold text-[#00288e] uppercase tracking-widest mb-1">New Appointment</p>
-        <h1 className="text-2xl font-black text-[#1a3844]">新規予約の登録</h1>
+        <h1 className="text-xl md:text-2xl font-black text-[#1a3844]">新規予約の登録</h1>
         <p className="text-sm text-[#444653] mt-2">
           お客様の予約情報を入力してください。登録後、管理画面で確認できます。
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-7">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-7">
 
         {/* フォーム本体 */}
-        <form id="new-form" action={createReservationAction} className="col-span-2 space-y-6">
+        <form id="new-form" action={createReservationAction} className="md:col-span-2 space-y-6">
 
           {/* お客様情報 */}
           <FormSection icon="person" title="お客様情報">
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
               <Field label="顧客名" required>
                 <input
                   type="text" name="customer_name" required
@@ -61,7 +61,7 @@ export default function NewReservationPage() {
 
           {/* 予約内容 */}
           <FormSection icon="calendar_today" title="予約内容">
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
               <Field label="予約日" required>
                 <input
                   type="date" name="reservation_date" required
@@ -92,8 +92,8 @@ export default function NewReservationPage() {
             </div>
           </FormSection>
 
-          {/* ボタン（モバイル用） */}
-          <div className="flex gap-3 lg:hidden">
+          {/* モバイル用送信ボタン */}
+          <div className="flex gap-3 md:hidden">
             <Link href="/reservations" className="flex-1 py-3 text-center text-sm text-[#444653] hover:text-[#191c1d] bg-[#e1e3e4] rounded-lg font-bold">
               キャンセル
             </Link>
@@ -108,8 +108,8 @@ export default function NewReservationPage() {
           </div>
         </form>
 
-        {/* 右サイドパネル */}
-        <div className="space-y-5">
+        {/* 右サイドパネル: デスクトップのみ */}
+        <div className="hidden md:block">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#e7e8e9] sticky top-8">
             <h3 className="text-xs font-bold text-[#00288e] flex items-center gap-1.5 mb-5">
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>visibility</span>
@@ -161,8 +161,8 @@ function FormSection({
   icon: string; title: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl p-7 shadow-sm">
-      <div className="flex items-center gap-2 mb-5 pb-4 border-b border-[#f3f4f5]">
+    <div className="bg-white rounded-xl p-5 md:p-7 shadow-sm">
+      <div className="flex items-center gap-2 mb-4 md:mb-5 pb-4 border-b border-[#f3f4f5]">
         <span className="material-symbols-outlined text-[#00288e]" style={{ fontSize: '20px' }}>{icon}</span>
         <h2 className="text-sm font-bold text-[#1a3844]">{title}</h2>
       </div>
@@ -177,7 +177,7 @@ function Field({
   label: string; required?: boolean; colSpan?: number; children: React.ReactNode;
 }) {
   return (
-    <div className={colSpan === 2 ? 'col-span-2' : ''}>
+    <div className={colSpan === 2 ? 'sm:col-span-2' : ''}>
       <label className="flex items-center gap-1.5 text-xs font-bold text-[#444653] mb-1.5">
         {label}
         {required
